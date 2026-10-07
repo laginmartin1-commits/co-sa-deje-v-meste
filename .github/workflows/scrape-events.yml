@@ -1,0 +1,24 @@
+name: Zbieranie eventov
+
+on:
+  schedule:
+    - cron: "0 4 * * *" # každý deň o 4:00 UTC (6:00 u nás v lete)
+  workflow_dispatch: {} # ručné spustenie z GitHubu
+
+jobs:
+  scrape:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    defaults:
+      run:
+        working-directory: bot
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - run: npm install --no-audit --no-fund
+      - run: node index.mjs
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}

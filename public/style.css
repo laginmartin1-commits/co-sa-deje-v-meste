@@ -1,0 +1,95 @@
+:root {
+  --bg: #f7f6f3;
+  --surface: #ffffff;
+  --text: #1c1b19;
+  --muted: #6b6862;
+  --line: #e6e3dc;
+  --accent: #d9480f;
+  --accent-soft: #fdebe2;
+  --radius: 14px;
+  color-scheme: light;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #141412;
+    --surface: #1e1d1b;
+    --text: #f1efea;
+    --muted: #a19d95;
+    --line: #2f2d2a;
+    --accent: #ff8a4c;
+    --accent-soft: #3a2418;
+    color-scheme: dark;
+  }
+}
+
+* { box-sizing: border-box; }
+body {
+  margin: 0;
+  background: var(--bg);
+  color: var(--text);
+  font: 16px/1.5 Inter, system-ui, sans-serif;
+}
+a { color: inherit; }
+.wrap { max-width: 880px; margin: 0 auto; padding: 0 16px; }
+.muted { color: var(--muted); }
+
+.top {
+  max-width: 880px; margin: 0 auto; padding: 20px 16px;
+  display: flex; align-items: center; justify-content: space-between;
+}
+.brand { font-weight: 700; font-size: 1.15rem; text-decoration: none; display: flex; gap: 8px; align-items: center; }
+.brand-mark { color: var(--accent); font-size: .8rem; }
+.badge { font-size: .75rem; padding: 3px 10px; border-radius: 99px; background: var(--accent-soft); color: var(--accent); font-weight: 600; }
+
+h1 { font-size: clamp(1.6rem, 4vw, 2.2rem); line-height: 1.15; margin: 12px 0 6px; letter-spacing: -.02em; }
+.lead { margin: 0 0 24px; color: var(--muted); }
+
+.search {
+  width: 100%; padding: 12px 14px; border-radius: var(--radius);
+  border: 1px solid var(--line); background: var(--surface); color: var(--text); font: inherit;
+  margin-bottom: 20px;
+}
+.search:focus { outline: 2px solid var(--accent); outline-offset: 1px; }
+
+.cities { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 12px; padding: 0; margin: 0; list-style: none; }
+.city {
+  display: block; text-decoration: none; padding: 18px; border-radius: var(--radius);
+  background: var(--surface); border: 1px solid var(--line); transition: border-color .15s, transform .15s;
+}
+.city:hover { border-color: var(--accent); transform: translateY(-1px); }
+.city-name { font-weight: 600; font-size: 1.1rem; }
+.city-meta { font-size: .85rem; color: var(--muted); margin-top: 2px; }
+.city-count { margin-top: 12px; font-size: .9rem; font-weight: 600; color: var(--accent); }
+
+.back { display: inline-block; margin-top: 4px; text-decoration: none; color: var(--muted); font-size: .9rem; }
+.back:hover { color: var(--text); }
+
+.chips { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 20px; }
+.chip {
+  font: inherit; font-size: .85rem; padding: 6px 12px; border-radius: 99px; cursor: pointer;
+  border: 1px solid var(--line); background: var(--surface); color: var(--text);
+}
+.chip[aria-pressed="true"] { background: var(--text); color: var(--bg); border-color: var(--text); }
+
+.day { margin: 28px 0 10px; font-size: .8rem; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); font-weight: 600; }
+.events { list-style: none; padding: 0; margin: 0; display: grid; gap: 10px; }
+.event {
+  display: grid; grid-template-columns: 64px 1fr; gap: 14px;
+  padding: 16px; border-radius: var(--radius); background: var(--surface); border: 1px solid var(--line);
+}
+.event-time { font-weight: 700; font-variant-numeric: tabular-nums; }
+.event-time small { display: block; font-weight: 500; color: var(--muted); font-size: .75rem; }
+.event-title { font-weight: 600; margin: 0; font-size: 1.02rem; }
+.event-title a { text-decoration: none; }
+.event-title a:hover { text-decoration: underline; color: var(--accent); }
+.event-venue { font-size: .9rem; color: var(--muted); margin-top: 2px; }
+.event-desc { font-size: .92rem; margin: 6px 0 0; }
+.tag { display: inline-block; font-size: .72rem; margin-top: 8px; padding: 2px 8px; border-radius: 99px; background: var(--accent-soft); color: var(--accent); font-weight: 600; }
+
+.empty { padding: 40px 20px; text-align: center; border: 1px dashed var(--line); border-radius: var(--radius); color: var(--muted); }
+.foot { padding-top: 48px; padding-bottom: 32px; font-size: .82rem; }
+
+@media (max-width: 480px) {
+  .event { grid-template-columns: 1fr; gap: 4px; }
+  .event-time small { display: inline; margin-left: 6px; }
+}

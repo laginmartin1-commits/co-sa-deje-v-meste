@@ -1,0 +1,53 @@
+[
+  {
+    "id": "bratislava",
+    "name": "Bratislava",
+    "region": "Bratislavský kraj",
+    "sources": [
+      "https://www.visitbratislava.com/sk/podujatia/",
+      "https://www.visitbratislava.com/sk/podujatia/page/2/"
+    ]
+  },
+  {
+    "id": "kosice",
+    "name": "Košice",
+    "region": "Košický kraj",
+    "sources": ["https://visitkosice.org/podujatia/kategorie/aktualne-podujatia"]
+  },
+  {
+    "id": "zilina",
+    "name": "Žilina",
+    "region": "Žilinský kraj",
+    "sources": ["https://www.tikzilina.eu/podujatia/"]
+  },
+  {
+    "id": "banska-bystrica",
+    "name": "Banská Bystrica",
+    "region": "Banskobystrický kraj",
+    "sources": ["https://www.banskabystrica.sk/podujatia/"]
+  },
+  {
+    "id": "nitra",
+    "name": "Nitra",
+    "region": "Nitriansky kraj",
+    "sources": ["https://nitra.sk/podujatia/"]
+  },
+  {
+    "id": "presov",
+    "name": "Prešov",
+    "region": "Prešovský kraj",
+    "sources": ["https://www.presov.sk/kalendar-podujati.html"]
+  },
+  {
+    "id": "trnava",
+    "name": "Trnava",
+    "region": "Trnavský kraj",
+    "sources": ["https://www.trnava.sk/podujatia", "https://www.trnava-live.sk/"]
+  },
+  {
+    "id": "trencin",
+    "name": "Trenčín",
+    "region": "Trenčiansky kraj",
+    "sources": ["https://www.visittrencin.sk/podujatia/", "https://www.trencin2026.eu/"]
+  }
+]
