@@ -7,8 +7,7 @@ Web so zoznamom miest a nadchádzajúcich eventov. Eventy zbiera AI bot z verejn
 ```
 GitHub Actions (každý deň 6:00)
    └─ bot/index.mjs
-        ├─ stiahne stránky s podujatiami (bot/cities.json → "sources")
-        │  alebo nechá Gemini vyhľadať eventy cez Google Search
+        ├─ stiahne stránky s podujatiami (bot/cities.json, bot/national-sources.json)
         ├─ Gemini API (free tier) z textu vytiahne eventy → JSON
         └─ zapíše do Firestore (kolekcie cities, events)
 Firebase Hosting (public/) ── číta z Firestore ── návštevník
@@ -63,14 +62,16 @@ node index.mjs                               # zapíše do Firestore
 ```
 
 ## Pridanie mesta alebo zdroja
-Uprav [bot/cities.json](bot/cities.json):
+**Zdroje konkrétneho mesta** sú v [bot/cities.json](bot/cities.json). Patria sem stránky mesta, infocentier, divadiel, výstavísk (Agrokomplex, Incheba…) a arén:
 ```json
 { "id": "poprad", "name": "Poprad", "region": "Prešovský kraj", "sources": ["https://.../podujatia"] }
 ```
-- **`sources` vyplnené:** bot stiahne tieto stránky a AI z nich vytiahne eventy. Presnejšie a spoľahlivejšie, odporúčam. Najlepšie sú stránky mesta, turistických infocentier, kultúrnych domov a divadiel.
-- **`sources` prázdne:** AI eventy vyhľadá cez Google Search. Pohodlné, ale menej presné a na free tieri obmedzené počtom vyhľadávaní.
 
-Funguje to len na stránkach, ktoré majú eventy priamo v HTML. Ak stránka eventy dočítava JavaScriptom, bot uvidí prázdnu stránku (pozri výstup `--dry-run`).
+**Celoslovenské zdroje** sú v [bot/national-sources.json](bot/national-sources.json), napríklad predpredajové portály. AI pri každom evente určí mesto. Eventy z miest, ktoré nie sú v cities.json, sa preskočia.
+
+Bot zbiera eventy na 12 mesiacov dopredu.
+
+Funguje to len na stránkach, ktoré majú eventy priamo v HTML. Ak stránka eventy dočítava JavaScriptom, bot uvidí prázdnu stránku (pozri výstup `--dry-run`). Google Search v Gemini sa nepoužíva, lebo na bezplatnom pláne nemá kvótu.
 
 ## Limity free tieru Gemini
 Google limity občas mení (v roku 2026 ich už niekoľkokrát znížil). Bot volá AI raz za každý zdroj, čaká 7 s medzi volaniami a pri chybe 429 to skúsi znova. Pri desiatkach miest buď zvýš `GEMINI_DELAY_MS`, alebo nastav `GEMINI_MODEL` na lacnejší model (napr. `gemini-flash-lite-latest`, ktorý má vyššie denné limity).

@@ -5,49 +5,75 @@
     "region": "Bratislavský kraj",
     "sources": [
       "https://www.visitbratislava.com/sk/podujatia/",
-      "https://www.visitbratislava.com/sk/podujatia/page/2/"
+      "https://www.visitbratislava.com/sk/podujatia/page/2/",
+      "https://www.incheba.sk/kalendar-podujati/",
+      "https://www.snd.sk/program",
+      "https://www.dpoh.sk/program"
     ]
   },
   {
     "id": "kosice",
     "name": "Košice",
     "region": "Košický kraj",
-    "sources": ["https://visitkosice.org/podujatia/kategorie/aktualne-podujatia"]
+    "sources": [
+      "https://visitkosice.org/podujatia/kategorie/aktualne-podujatia",
+      "https://www.tabacka.sk/sk/program",
+      "https://www.steelarena.sk/"
+    ]
   },
   {
     "id": "zilina",
     "name": "Žilina",
     "region": "Žilinský kraj",
-    "sources": ["https://www.tikzilina.eu/podujatia/"]
+    "sources": [
+      "https://www.stanica.sk/program/",
+      "https://www.bdz.sk/program/"
+    ]
   },
   {
     "id": "banska-bystrica",
     "name": "Banská Bystrica",
     "region": "Banskobystrický kraj",
-    "sources": ["https://www.banskabystrica.sk/podujatia/"]
+    "sources": [
+      "https://www.banskabystrica.sk/podujatia/",
+      "https://www.stateopera.sk/sk/program"
+    ]
   },
   {
     "id": "nitra",
     "name": "Nitra",
     "region": "Nitriansky kraj",
-    "sources": ["https://nitra.sk/podujatia/"]
+    "sources": [
+      "https://nitra.sk/podujatia/",
+      "https://www.agrokomplex.sk/vystavy/",
+      "https://www.dab.sk/program/"
+    ]
   },
   {
     "id": "presov",
     "name": "Prešov",
     "region": "Prešovský kraj",
-    "sources": ["https://www.presov.sk/kalendar-podujati.html"]
+    "sources": [
+      "https://www.presov.sk/kalendar-podujati.html",
+      "https://www.presov.sk/kalendar-podujati.html?page=2"
+    ]
   },
   {
     "id": "trnava",
     "name": "Trnava",
     "region": "Trnavský kraj",
-    "sources": ["https://www.trnava.sk/podujatia", "https://www.trnava-live.sk/"]
+    "sources": [
+      "https://www.trnava.sk/podujatia",
+      "https://www.trnava-live.sk/"
+    ]
   },
   {
     "id": "trencin",
     "name": "Trenčín",
     "region": "Trenčiansky kraj",
-    "sources": ["https://www.visittrencin.sk/podujatia/", "https://www.trencin2026.eu/"]
+    "sources": [
+      "https://www.visittrencin.sk/podujatia/",
+      "https://www.trencin2026.eu/"
+    ]
   }
 ]

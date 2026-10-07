@@ -5,10 +5,14 @@ on:
     - cron: "0 4 * * *" # každý deň o 4:00 UTC (6:00 u nás v lete)
   workflow_dispatch: {} # ručné spustenie z GitHubu
 
+permissions:
+  contents: read
+  actions: write # pre krok "keepalive"
+
 jobs:
   scrape:
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 45
     defaults:
       run:
         working-directory: bot
@@ -22,3 +26,10 @@ jobs:
         env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
           FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+      # GitHub vypne plánované workflowy po 60 dňoch bez aktivity v repozitári.
+      # Opätovné "zapnutie" cez API počítadlo vynuluje.
+      - name: Keepalive
+        if: always()
+        run: gh api -X PUT "repos/${{ github.repository }}/actions/workflows/scrape-events.yml/enable"
+        env:
+          GH_TOKEN: ${{ github.token }}

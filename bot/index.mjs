@@ -1,13 +1,13 @@
 // AI bot: pre každé mesto nájde nadchádzajúce eventy a zapíše ich do Firestore.
 //
-// Režimy pre mesto:
-//   - mesto má "sources" -> stiahne tie stránky a Gemini z nich vytiahne eventy
-//   - mesto nemá "sources" -> Gemini ich vyhľadá cez Google Search (grounding)
+// Zdroje:
+//   - cities.json -> "sources": stránky konkrétneho mesta (mesto, divadlá, výstaviská, arény...)
+//   - national-sources.json: celoslovenské stránky (predpredaje...), AI pri každom evente určí mesto
 //
 // Premenné prostredia:
 //   GEMINI_API_KEY            (povinné) kľúč z https://aistudio.google.com
 //   FIREBASE_SERVICE_ACCOUNT  JSON service accountu (alebo GOOGLE_APPLICATION_CREDENTIALS = cesta k súboru)
-//   GEMINI_MODEL              voliteľné, predvolene gemini-flash-latest
+//   GEMINI_MODEL              voliteľné, predvolene gemini-flash-lite-latest (vyššie denné limity)
 //
 // Spustenie: node index.mjs [--dry-run] [--city=bratislava]
 
@@ -15,13 +15,15 @@ import { readFileSync } from "node:fs";
 import { createHash } from "node:crypto";
 
 const TZ = "Europe/Bratislava";
-const MODEL = process.env.GEMINI_MODEL || "gemini-flash-latest";
+const MODEL = process.env.GEMINI_MODEL || "gemini-flash-lite-latest";
 const API_KEY = process.env.GEMINI_API_KEY;
 const DRY_RUN = process.argv.includes("--dry-run");
 const ONLY_CITY = process.argv.find((a) => a.startsWith("--city="))?.split("=")[1];
 // Free tier má limit ~10 požiadaviek/min, preto medzi volaniami čakáme.
 const DELAY_MS = Number(process.env.GEMINI_DELAY_MS || 7000);
 const MAX_PAGE_CHARS = 60000;
+// Veľtrhy a festivaly sa plánujú dlho dopredu.
+const HORIZON_DAYS = 365;
 
 const CATEGORIES = ["hudba", "divadlo", "film", "šport", "výstava", "festival", "pre deti", "jedlo a trhy", "prednáška", "iné"];
 
@@ -106,8 +108,12 @@ const EVENT_SCHEMA = {
   required: ["events"],
 };
 
+const NATIONAL_SCHEMA = structuredClone(EVENT_SCHEMA);
+NATIONAL_SCHEMA.properties.events.items.properties.city = { type: "STRING", description: "mesto konania" };
+NATIONAL_SCHEMA.properties.events.items.required.push("city");
+
 // Pri preťažení hlavného modelu (503) skúsime záložný.
-const MODELS = [...new Set([MODEL, process.env.GEMINI_FALLBACK_MODEL || "gemini-flash-lite-latest"])];
+const MODELS = [...new Set([MODEL, process.env.GEMINI_FALLBACK_MODEL || "gemini-flash-latest"])];
 
 async function callGemini(body) {
   for (let attempt = 1; attempt <= 4; attempt++) {
@@ -130,54 +136,48 @@ async function callGemini(body) {
   throw new Error("Gemini: vyčerpané pokusy");
 }
 
-function parseJsonLoose(text) {
-  const fenced = text.match(/```(?:json)?\s*([\s\S]*?)```/);
-  const raw = fenced ? fenced[1] : text.slice(text.indexOf("{"), text.lastIndexOf("}") + 1);
-  return JSON.parse(raw);
-}
-
-const baseRules = (city, today) => `Dnes je ${today}. Mesto: ${city.name} (Slovensko).
+const rules = (today) => `Dnes je ${today}.
 Pravidlá:
-- Iba eventy, ktoré sa konajú v meste ${city.name} alebo jeho bezprostrednom okolí.
-- Iba eventy so začiatkom dnes alebo neskôr (startDate >= ${today}), najviac 90 dní dopredu.
+- Iba eventy so začiatkom dnes alebo neskôr (startDate >= ${today}) alebo viacdňové, ktoré ešte bežia; najviac ${HORIZON_DAYS} dní dopredu.
+- Vytiahni VŠETKY eventy zo stránky (koncerty, divadlo, výstavy, veľtrhy, trhy, zápasy, festivaly...), nie len výber.
 - Nevymýšľaj si. Ak nepoznáš presný dátum, event vynechaj.
 - Ak chýba rok, doplň najbližší budúci.
 - Názov ponechaj v pôvodnom znení, popis napíš stručne po slovensky.
 - category vyber z: ${CATEGORIES.join(", ")}.`;
 
-async function extractFromPage(city, pageUrl, text, today) {
-  const prompt = `${baseRules(city, today)}
-- Relatívne odkazy doplň na absolútne podľa adresy stránky: ${pageUrl}
-
-Z nasledujúceho textu webovej stránky vytiahni zoznam eventov.
-
----
-${text}`;
+async function extract(prompt, schema) {
   const out = await callGemini({
     contents: [{ role: "user", parts: [{ text: prompt }] }],
-    generationConfig: { temperature: 0.1, responseMimeType: "application/json", responseSchema: EVENT_SCHEMA },
+    generationConfig: { temperature: 0.1, responseMimeType: "application/json", responseSchema: schema },
   });
   return JSON.parse(out).events || [];
 }
 
-async function searchEvents(city, today) {
-  const prompt = `${baseRules(city, today)}
+const extractFromPage = (city, pageUrl, text, today) => extract(`${rules(today)}
+- Iba eventy v meste ${city.name} (Slovensko) alebo jeho bezprostrednom okolí.
+- Relatívne odkazy doplň na absolútne podľa adresy stránky: ${pageUrl}
 
-Vyhľadaj na internete nadchádzajúce kultúrne, športové a spoločenské podujatia v meste ${city.name}
-(koncerty, divadlo, festivaly, výstavy, trhy, športové zápasy, akcie pre deti...). Nájdi ich čo najviac, ideálne 20-40.
-Do url daj priamy odkaz na stránku eventu, ak ho poznáš.
+Z nasledujúceho textu webovej stránky vytiahni zoznam eventov.
+---
+${text}`, EVENT_SCHEMA);
 
-Odpovedz IBA JSON objektom v bloku \`\`\`json v tvare:
-{"events":[{"title":"","startDate":"YYYY-MM-DD","startTime":"HH:MM","endDate":"","venue":"","description":"","category":"","url":""}]}`;
-  const out = await callGemini({
-    contents: [{ role: "user", parts: [{ text: prompt }] }],
-    tools: [{ google_search: {} }],
-    generationConfig: { temperature: 0.2 },
-  });
-  return parseJsonLoose(out).events || [];
-}
+const extractNational = (pageUrl, text, today) => extract(`${rules(today)}
+- Do "city" daj mesto konania tak, ako sa volá po slovensky (napr. "Banská Bystrica").
+- Relatívne odkazy doplň na absolútne podľa adresy stránky: ${pageUrl}
+
+Z nasledujúceho textu webovej stránky (podujatia z celého Slovenska) vytiahni zoznam eventov.
+---
+${text}`, NATIONAL_SCHEMA);
 
 // ---------- normalizácia ----------
+
+function addDays(dateStr, n) {
+  const d = new Date(dateStr + "T12:00:00Z");
+  d.setUTCDate(d.getUTCDate() + n);
+  return d.toISOString().slice(0, 10);
+}
+
+const plain = (s) => String(s || "").normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase().replace(/[^a-z]+/g, " ").trim();
 
 const isDate = (s) => /^\d{4}-\d{2}-\d{2}$/.test(s || "");
 const clean = (s, max) => String(s || "").replace(/\s+/g, " ").trim().slice(0, max);
@@ -188,6 +188,7 @@ function normalize(raw, city, source, today) {
   const endDate = isDate(raw.endDate) && raw.endDate >= raw.startDate ? raw.endDate : "";
   // viacdňové eventy, ktoré už bežia, necháme; skončené vyhodíme
   if ((endDate || raw.startDate) < today) return null;
+  if (raw.startDate > addDays(today, HORIZON_DAYS)) return null;
 
   const startTime = /^\d{1,2}:\d{2}$/.test(raw.startTime || "") ? raw.startTime.padStart(5, "0") : "";
   let url = clean(raw.url, 500);
@@ -259,57 +260,65 @@ async function saveCity(ctx, city, events, today) {
 
 // ---------- hlavný beh ----------
 
-async function processCity(city, today) {
-  const found = [];
-  if (city.sources?.length) {
-    for (const src of city.sources) {
-      try {
-        const text = await fetchPage(src);
-        const evs = await extractFromPage(city, src, text, today);
-        console.log(`  ${src} -> ${evs.length}`);
-        found.push(...evs.map((e) => ({ e, source: src })));
-      } catch (err) {
-        console.warn(`  ${src} zlyhalo: ${err.message}`);
-      }
-      await sleep(DELAY_MS);
-    }
-  } else {
-    try {
-      const evs = await searchEvents(city, today);
-      console.log(`  vyhľadávanie -> ${evs.length}`);
-      found.push(...evs.map((e) => ({ e, source: "google-search" })));
-    } catch (err) {
-      console.warn(`  vyhľadávanie zlyhalo: ${err.message}`);
-    }
+async function readSource(url, extractor) {
+  try {
+    const text = await fetchPage(url);
+    const evs = await extractor(text);
+    console.log(`  ${url} -> ${evs.length}`);
+    return evs;
+  } catch (err) {
+    console.warn(`  ${url} zlyhalo: ${err.message}`);
+    return [];
+  } finally {
     await sleep(DELAY_MS);
   }
+}
 
-  const byId = new Map();
-  for (const { e, source } of found) {
+function addEvents(bucket, raws, city, source, today) {
+  for (const e of raws) {
     const ev = normalize(e, city, source, today);
-    if (ev && !byId.has(ev.id)) byId.set(ev.id, ev);
+    if (ev && !bucket.has(ev.id)) bucket.set(ev.id, ev);
   }
-  return [...byId.values()];
 }
 
 const today = todayInTz();
+const selected = cities.filter((c) => !ONLY_CITY || c.id === ONLY_CITY);
+const buckets = new Map(selected.map((c) => [c.id, new Map()]));
+
+for (const city of selected) {
+  console.log(`\n== ${city.name} ==`);
+  for (const src of city.sources || []) {
+    addEvents(buckets.get(city.id), await readSource(src, (t) => extractFromPage(city, src, t, today)), city, src, today);
+  }
+}
+
+const national = JSON.parse(readFileSync(new URL("./national-sources.json", import.meta.url), "utf8"));
+const byName = new Map(selected.map((c) => [plain(c.name), c]));
+console.log("\n== Celoslovenské zdroje ==");
+for (const src of national) {
+  const evs = await readSource(src, (t) => extractNational(src, t, today));
+  for (const e of evs) {
+    const city = byName.get(plain(e.city));
+    if (city) addEvents(buckets.get(city.id), [e], city, src, today);
+  }
+}
+
 const ctx = DRY_RUN ? null : await initDb();
 let failed = 0;
-
-for (const city of cities.filter((c) => !ONLY_CITY || c.id === ONLY_CITY)) {
-  console.log(`\n== ${city.name} ==`);
-  const events = await processCity(city, today);
-  console.log(`  platných eventov: ${events.length}`);
+console.log("\n== Výsledok ==");
+for (const city of selected) {
+  const events = [...buckets.get(city.id).values()];
   if (DRY_RUN) {
-    for (const ev of events.slice(0, 10)) console.log(`   - ${ev.startDate} ${ev.startTime} ${ev.title} @ ${ev.venue}`);
+    console.log(`${city.name}: ${events.length}`);
+    for (const ev of events.slice(0, 5)) console.log(`   - ${ev.startDate} ${ev.startTime} ${ev.title} @ ${ev.venue}`);
     continue;
   }
   try {
     const r = await saveCity(ctx, city, events, today);
-    console.log(`  uložené; nadchádzajúcich v DB: ${r.upcoming}, zmazaných starých: ${r.removed}`);
+    console.log(`${city.name}: nájdených ${events.length}, v DB nadchádzajúcich ${r.upcoming}, zmazaných starých ${r.removed}`);
   } catch (err) {
     failed++;
-    console.error(`  zápis do DB zlyhal: ${err.message}`);
+    console.error(`${city.name}: zápis do DB zlyhal: ${err.message}`);
   }
 }
 
