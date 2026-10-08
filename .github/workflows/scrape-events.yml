@@ -16,16 +16,33 @@ jobs:
     defaults:
       run:
         working-directory: bot
+    env:
+      FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+      SITE_URL: ${{ vars.SITE_URL }} # po kúpe domény nastav v Settings → Variables
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
           node-version: 22
       - run: npm install --no-audit --no-fund
-      - run: node index.mjs
+
+      - name: Zber eventov
+        run: node index.mjs
         env:
           GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
-          FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+
+      - name: Generovanie statických stránok
+        if: always()
+        run: node generate-site.mjs
+
+      - name: Nasadenie na Firebase Hosting
+        if: always()
+        working-directory: .
+        run: |
+          printf '%s' "$FIREBASE_SERVICE_ACCOUNT" > "$RUNNER_TEMP/sa.json"
+          GOOGLE_APPLICATION_CREDENTIALS="$RUNNER_TEMP/sa.json" npx -y firebase-tools@15 deploy --only hosting --project co-sa-deje-v-meste-sk --non-interactive
+          rm -f "$RUNNER_TEMP/sa.json"
+
       # GitHub vypne plánované workflowy po 60 dňoch bez aktivity v repozitári.
       # Opätovné "zapnutie" cez API počítadlo vynuluje.
       - name: Keepalive

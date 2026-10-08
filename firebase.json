@@ -1,8 +1,13 @@
 {
   "hosting": {
-    "public": "public",
+    "public": "site",
     "ignore": ["firebase.json", "**/.*"],
-    "rewrites": [{ "source": "**", "destination": "/index.html" }]
+    "cleanUrls": true,
+    "trailingSlash": true,
+    "headers": [
+      { "source": "**/*.html", "headers": [{ "key": "Cache-Control", "value": "public, max-age=600" }] },
+      { "source": "**/*.css", "headers": [{ "key": "Cache-Control", "value": "public, max-age=86400" }] }
+    ]
   },
   "firestore": {
     "rules": "firestore.rules",

@@ -1,4 +1,4 @@
-# Čo sa deje v meste
+# Kam v meste
 
 Web so zoznamom miest a nadchádzajúcich eventov. Eventy zbiera AI bot z verejných stránok raz denne.
 
@@ -9,8 +9,10 @@ GitHub Actions (každý deň 6:00)
    └─ bot/index.mjs
         ├─ stiahne stránky s podujatiami (bot/cities.json, bot/national-sources.json)
         ├─ Gemini API (free tier) z textu vytiahne eventy → JSON
-        └─ zapíše do Firestore (kolekcie cities, events)
-Firebase Hosting (public/) ── číta z Firestore ── návštevník
+        ├─ zapíše do Firestore (kolekcie cities, events)
+        ├─ bot/generate-site.mjs vygeneruje statické HTML stránky do site/
+        └─ nasadí ich na Firebase Hosting
+návštevník ── Firebase Hosting (hotové HTML, databázu nečíta)
 ```
 
 | Časť | Služba | Prečo zadarmo |
@@ -75,6 +77,12 @@ Funguje to len na stránkach, ktoré majú eventy priamo v HTML. Ak stránka eve
 
 ## Limity free tieru Gemini
 Google limity občas mení (v roku 2026 ich už niekoľkokrát znížil). Bot volá AI raz za každý zdroj, čaká 7 s medzi volaniami a pri chybe 429 to skúsi znova. Pri desiatkach miest buď zvýš `GEMINI_DELAY_MS`, alebo nastav `GEMINI_MODEL` na lacnejší model (napr. `gemini-flash-lite-latest`, ktorý má vyššie denné limity).
+
+## Statické stránky (SEO)
+Web nečíta databázu v prehliadači. Bot raz denne vygeneruje hotové stránky, ktoré vie Google zaindexovať:
+`/nitra/`, `/nitra/tento-vikend/`, `/nitra/hudba/`, `/nitra/oktober-2026/`, `/nitra/event/<nazov>-<datum>/`, plus `sitemap.xml`.
+Eventy majú štruktúrované dáta schema.org/Event. Lokálne: `node generate-site.mjs`, potom `firebase deploy --only hosting`.
+Po kúpe domény nastav v GitHube **Settings → Secrets and variables → Actions → Variables** premennú `SITE_URL` (napr. `https://kamvmeste.sk`).
 
 ## Štruktúra dát vo Firestore
 - `cities/{id}`: `name`, `region`, `upcomingCount`, `lastUpdated`
