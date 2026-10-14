@@ -110,3 +110,19 @@ a.tag { text-decoration: none; }
 .button { display: inline-block; background: var(--accent); color: #fff; padding: 10px 18px; border-radius: 99px; text-decoration: none; font-weight: 600; }
 .button:hover { filter: brightness(1.08); }
 .small { font-size: .82rem; }
+
+/* prepínač jazykov */
+.lang { display: flex; align-items: center; gap: 8px; position: relative; }
+.lang-btn { font-size: .8rem; font-weight: 700; text-decoration: none; padding: 5px 10px; border: 1px solid var(--line); border-radius: 99px; background: var(--surface); }
+.lang-btn:hover { border-color: var(--accent); color: var(--accent); }
+.lang-more summary { list-style: none; cursor: pointer; padding: 4px 8px; border: 1px solid var(--line); border-radius: 99px; background: var(--surface); font-size: .9rem; line-height: 1.4; }
+.lang-more summary::-webkit-details-marker { display: none; }
+.lang-more[open] summary { border-color: var(--accent); }
+.lang-menu {
+  position: absolute; right: 0; top: calc(100% + 6px); z-index: 10; min-width: 200px;
+  display: flex; flex-direction: column; padding: 8px; gap: 2px;
+  background: var(--surface); border: 1px solid var(--line); border-radius: 12px; box-shadow: 0 8px 24px rgba(0,0,0,.15);
+}
+.lang-menu span { padding: 4px 8px 6px; }
+.lang-menu a { text-decoration: none; padding: 6px 8px; border-radius: 8px; }
+.lang-menu a:hover { background: var(--accent-soft); color: var(--accent); }

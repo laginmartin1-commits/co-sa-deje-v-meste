@@ -98,6 +98,7 @@ const EVENT_SCHEMA = {
           endDate: { type: "STRING", description: "YYYY-MM-DD alebo prázdne" },
           venue: { type: "STRING" },
           description: { type: "STRING", description: "1-2 vety po slovensky" },
+          descriptionEn: { type: "STRING", description: "ten istý popis po anglicky" },
           category: { type: "STRING", enum: CATEGORIES },
           url: { type: "STRING", description: "odkaz na detail eventu alebo prázdne" },
         },
@@ -142,7 +143,7 @@ Pravidlá:
 - Vytiahni VŠETKY eventy zo stránky (koncerty, divadlo, výstavy, veľtrhy, trhy, zápasy, festivaly...), nie len výber.
 - Nevymýšľaj si. Ak nepoznáš presný dátum, event vynechaj.
 - Ak chýba rok, doplň najbližší budúci.
-- Názov ponechaj v pôvodnom znení, popis napíš stručne po slovensky.
+- Názov ponechaj v pôvodnom znení, popis napíš stručne po slovensky (description) a ten istý po anglicky (descriptionEn).
 - category vyber z: ${CATEGORIES.join(", ")}.`;
 
 async function extract(prompt, schema) {
@@ -206,6 +207,7 @@ function normalize(raw, city, source, today) {
     start: localToDate(raw.startDate < today && endDate ? today : raw.startDate, startTime),
     venue: clean(raw.venue, 200),
     description: clean(raw.description, 600),
+    descriptionEn: clean(raw.descriptionEn, 600),
     category: CATEGORIES.includes(raw.category) ? raw.category : "iné",
     url,
     source,
