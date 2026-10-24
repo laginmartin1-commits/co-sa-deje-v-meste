@@ -83,5 +83,109 @@
       "https://www.visittrencin.sk/podujatia/",
       "https://www.trencin2026.eu/"
     ]
+  },
+  {
+    "id": "martin",
+    "name": "Martin",
+    "locative": "v Martine",
+    "region": "Žilinský kraj",
+    "sources": [
+      "https://www.kulturamartin.sk/"
+    ]
+  },
+  {
+    "id": "poprad",
+    "name": "Poprad",
+    "locative": "v Poprade",
+    "region": "Prešovský kraj",
+    "sources": [
+      "https://www.poprad.sk/podujatia"
+    ]
+  },
+  {
+    "id": "prievidza",
+    "name": "Prievidza",
+    "locative": "v Prievidzi",
+    "region": "Trenčiansky kraj",
+    "sources": [
+      "https://www.prievidza.sk/podujatia/",
+      "https://www.rkcpd.sk/"
+    ]
+  },
+  {
+    "id": "zvolen",
+    "name": "Zvolen",
+    "locative": "vo Zvolene",
+    "region": "Banskobystrický kraj",
+    "sources": [
+      "https://www.zvolen.sk/aktualne-podujatia.html"
+    ]
+  },
+  {
+    "id": "povazska-bystrica",
+    "name": "Považská Bystrica",
+    "locative": "v Považskej Bystrici",
+    "region": "Trenčiansky kraj",
+    "sources": [
+      "https://www.povazska-bystrica.sk/",
+      "https://www.pospb.sk/"
+    ]
+  },
+  {
+    "id": "michalovce",
+    "name": "Michalovce",
+    "locative": "v Michalovciach",
+    "region": "Košický kraj",
+    "sources": []
+  },
+  {
+    "id": "nove-zamky",
+    "name": "Nové Zámky",
+    "locative": "v Nových Zámkoch",
+    "region": "Nitriansky kraj",
+    "sources": []
+  },
+  {
+    "id": "spisska-nova-ves",
+    "name": "Spišská Nová Ves",
+    "locative": "v Spišskej Novej Vsi",
+    "region": "Košický kraj",
+    "sources": [
+      "https://www.spisskanovaves.eu/podujatia"
+    ]
+  },
+  {
+    "id": "komarno",
+    "name": "Komárno",
+    "locative": "v Komárne",
+    "region": "Nitriansky kraj",
+    "sources": [
+      "https://komarno.sk/kalendar-akcii/"
+    ]
+  },
+  {
+    "id": "levice",
+    "name": "Levice",
+    "locative": "v Leviciach",
+    "region": "Nitriansky kraj",
+    "sources": []
+  },
+  {
+    "id": "liptovsky-mikulas",
+    "name": "Liptovský Mikuláš",
+    "locative": "v Liptovskom Mikuláši",
+    "region": "Žilinský kraj",
+    "sources": [
+      "https://www.mikulas.sk/podujatia/"
+    ]
+  },
+  {
+    "id": "piestany",
+    "name": "Piešťany",
+    "locative": "v Piešťanoch",
+    "region": "Trnavský kraj",
+    "sources": [
+      "https://www.piestany.sk/mesto/kultura-1/kulturne-podujatia/"
+    ]
   }
 ]

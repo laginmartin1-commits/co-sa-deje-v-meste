@@ -328,7 +328,8 @@ ${cats.map((c) => link(`${P}/${city.id}/${catSlug(L, c)}/`, L.catLabel(c), c)).j
   const dateFull = (d) => fmt(d, { day: "numeric", month: "numeric", year: "numeric" });
 
   // úvodná stránka
-  const cityCards = cities.map((c) => {
+  // mestá bez eventov na úvodnej stránke nezobrazujeme
+  const cityCards = cities.filter((c) => byCity.get(c.id).length).map((c) => {
     const n = byCity.get(c.id).length;
     const w = byCity.get(c.id).filter((e) => overlaps(e, wFrom, wTo)).length;
     return `<li><a class="city" href="${P}/${c.id}/">

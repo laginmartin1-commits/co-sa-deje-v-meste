@@ -59,7 +59,8 @@ function localToDate(dateStr, timeStr) {
 
 function htmlToText(html) {
   return html
-    .replace(/<(script|style|noscript|svg|iframe)[\s\S]*?<\/\1>/gi, " ")
+    // menu a pätičky vyhodíme, na niektorých weboch zaberajú väčšinu textu
+    .replace(/<(script|style|noscript|svg|iframe|nav|footer|select)\b[\s\S]*?<\/\1>/gi, " ")
     .replace(/<a\b[^>]*href=["']([^"']+)["'][^>]*>([\s\S]*?)<\/a>/gi, (_, href, text) => `${text} [${href}]`)
     .replace(/<(br|\/p|\/div|\/li|\/h\d|\/tr|\/article)[^>]*>/gi, "\n")
     .replace(/<[^>]+>/g, " ")
@@ -116,9 +117,9 @@ NATIONAL_SCHEMA.properties.events.items.required.push("city");
 // Pri preťažení hlavného modelu (503) skúsime záložný.
 const MODELS = [...new Set([MODEL, process.env.GEMINI_FALLBACK_MODEL || "gemini-flash-latest"])];
 
-async function callGemini(body) {
+async function callGemini(body, firstModel = 0) {
   for (let attempt = 1; attempt <= 4; attempt++) {
-    const model = MODELS[(attempt - 1) % MODELS.length];
+    const model = MODELS[(attempt - 1 + firstModel) % MODELS.length];
     const res = await fetch(`https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent`, {
       method: "POST",
       headers: { "Content-Type": "application/json", "x-goog-api-key": API_KEY },
@@ -147,11 +148,19 @@ Pravidlá:
 - category vyber z: ${CATEGORIES.join(", ")}.`;
 
 async function extract(prompt, schema) {
-  const out = await callGemini({
+  const body = {
     contents: [{ role: "user", parts: [{ text: prompt }] }],
-    generationConfig: { temperature: 0.1, responseMimeType: "application/json", responseSchema: schema },
-  });
-  return JSON.parse(out).events || [];
+    // limit dĺžky chráni pred "zacyklenou" odpoveďou modelu
+    generationConfig: { temperature: 0.1, maxOutputTokens: 32768, responseMimeType: "application/json", responseSchema: schema },
+  };
+  try {
+    return JSON.parse(await callGemini(body)).events || [];
+  } catch (err) {
+    if (!(err instanceof SyntaxError) || MODELS.length < 2) throw err;
+    console.warn("  pokazená odpoveď modelu, skúšam záložný model");
+    await sleep(DELAY_MS);
+    return JSON.parse(await callGemini(body, 1)).events || [];
+  }
 }
 
 const extractFromPage = (city, pageUrl, text, today) => extract(`${rules(today)}
@@ -294,7 +303,8 @@ for (const city of selected) {
   }
 }
 
-const national = JSON.parse(readFileSync(new URL("./national-sources.json", import.meta.url), "utf8"));
+// Pri teste jedného mesta (--city) celoslovenské zdroje preskočíme, šetríme limit Gemini.
+const national = ONLY_CITY ? [] : JSON.parse(readFileSync(new URL("./national-sources.json", import.meta.url), "utf8"));
 const byName = new Map(selected.map((c) => [plain(c.name), c]));
 console.log("\n== Celoslovenské zdroje ==");
 for (const src of national) {
