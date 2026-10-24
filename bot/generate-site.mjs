@@ -13,7 +13,7 @@ import { dirname, join } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const SITE_NAME = "Kam v meste";
-const SITE_URL = (process.env.SITE_URL || "https://co-sa-deje-v-meste-sk.web.app").replace(/\/$/, "");
+const SITE_URL = (process.env.SITE_URL || "https://kamvmeste.web.app").replace(/\/$/, "");
 const TZ = "Europe/Bratislava";
 
 const here = dirname(fileURLToPath(import.meta.url));

@@ -1,5 +1,18 @@
 {
   "projects": {
     "default": "co-sa-deje-v-meste-sk"
-  }
+  },
+  "targets": {
+    "co-sa-deje-v-meste-sk": {
+      "hosting": {
+        "main": [
+          "kamvmeste"
+        ],
+        "old": [
+          "co-sa-deje-v-meste-sk"
+        ]
+      }
+    }
+  },
+  "etags": {}
 }

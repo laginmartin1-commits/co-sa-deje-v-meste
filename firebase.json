@@ -1,14 +1,26 @@
 {
-  "hosting": {
-    "public": "site",
-    "ignore": ["firebase.json", "**/.*"],
-    "cleanUrls": true,
-    "trailingSlash": true,
-    "headers": [
-      { "source": "**/*.html", "headers": [{ "key": "Cache-Control", "value": "public, max-age=600" }] },
-      { "source": "**/*.css", "headers": [{ "key": "Cache-Control", "value": "public, max-age=86400" }] }
-    ]
-  },
+  "hosting": [
+    {
+      "target": "main",
+      "public": "site",
+      "ignore": ["firebase.json", "**/.*"],
+      "cleanUrls": true,
+      "trailingSlash": true,
+      "headers": [
+        { "source": "**/*.html", "headers": [{ "key": "Cache-Control", "value": "public, max-age=600" }] },
+        { "source": "**/*.css", "headers": [{ "key": "Cache-Control", "value": "public, max-age=86400" }] }
+      ]
+    },
+    {
+      "target": "old",
+      "public": "redirect",
+      "redirects": [
+        { "source": "/", "destination": "https://kamvmeste.web.app/", "type": 301 },
+        { "source": "/:path*/", "destination": "https://kamvmeste.web.app/:path*/", "type": 301 },
+        { "source": "/:path*", "destination": "https://kamvmeste.web.app/:path*", "type": 301 }
+      ]
+    }
+  ],
   "firestore": {
     "rules": "firestore.rules",
     "indexes": "firestore.indexes.json"
