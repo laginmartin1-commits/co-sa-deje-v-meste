@@ -136,14 +136,18 @@
     "name": "Michalovce",
     "locative": "v Michalovciach",
     "region": "Košický kraj",
-    "sources": []
+    "sources": [
+      "https://michalovce.virtualne.sk/akcie-a-podujatia.html"
+    ]
   },
   {
     "id": "nove-zamky",
     "name": "Nové Zámky",
     "locative": "v Nových Zámkoch",
     "region": "Nitriansky kraj",
-    "sources": []
+    "sources": [
+      "https://novezamky.virtualne.sk/akcie-a-podujatia.html"
+    ]
   },
   {
     "id": "spisska-nova-ves",
@@ -168,7 +172,9 @@
     "name": "Levice",
     "locative": "v Leviciach",
     "region": "Nitriansky kraj",
-    "sources": []
+    "sources": [
+      "https://levice.virtualne.sk/akcie-a-podujatia.html"
+    ]
   },
   {
     "id": "liptovsky-mikulas",
@@ -186,6 +192,16 @@
     "region": "Trnavský kraj",
     "sources": [
       "https://www.piestany.sk/mesto/kultura-1/kulturne-podujatia/"
+    ]
+  },
+  {
+    "id": "partizanske",
+    "name": "Partizánske",
+    "locative": "v Partizánskom",
+    "region": "Trenčiansky kraj",
+    "sources": [
+      "https://www.partizanske.sk/podujatia.html",
+      "https://partizanske.virtualne.sk/akcie-a-podujatia.html"
     ]
   }
 ]
